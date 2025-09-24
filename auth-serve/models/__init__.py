@@ -1,7 +1,7 @@
-from .organization import OrganizationBase, ProjectBase
-from .users import UserBase
-from .rbac import RoleBase, PermissionBase, APIKeyBase
 from .auth import SignupRequest, SignupResponse
+from .organization import OrganizationBase, ProjectBase
+from .rbac import APIKeyBase, PermissionBase, RoleBase
+from .users import UserBase
 
 __all__ = [
     "OrganizationBase",

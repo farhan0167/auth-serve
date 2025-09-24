@@ -1,4 +1,5 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import Field, SQLModel
+
 
 class UserBase(SQLModel):
     username: str = Field(unique=True)

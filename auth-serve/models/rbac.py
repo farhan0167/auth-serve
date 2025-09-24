@@ -1,11 +1,13 @@
 import datetime
 from enum import Enum
+
 from sqlmodel import Field, SQLModel
+
 
 class RoleType(str, Enum):
     system = "system"
     custom = "custom"
-    
+
 class SystemRole(str, Enum):
     owner = "owner"
     admin = "admin"
@@ -16,17 +18,17 @@ class PermissionActions(str, Enum):
     write = "write"
     delete = "delete"
     create = "create"
-    
+
 
 class RoleBase(SQLModel):
     name: str
     type: RoleType = Field(default=RoleType.system)
-    
+
 class PermissionBase(SQLModel):
     action: PermissionActions = Field(default=None)
     resource: str
     namespace: str
-    
+
 class APIKeyBase(SQLModel):
     name: str
     description: str

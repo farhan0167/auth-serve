@@ -1,19 +1,13 @@
 from sqlmodel import Session, select
 
-from db.tables import (
-    Organization,
-    User,
-    UserBase,
-    OrganizationBase,
-    Role,
-    UserRole
-)
+from db.tables import Organization, OrganizationBase, Role, User, UserBase, UserRole
 from models.rbac import SystemRole
+
 
 class Authentication:
     def __init__(self, db: Session) -> None:
         self.db = db
-        
+
     async def signup(self, org: OrganizationBase, user: UserBase):
         # Create org
         org = Organization(**org.model_dump())
@@ -25,10 +19,10 @@ class Authentication:
         self.db.add(org)
         self.db.add(user)
         self.db.commit()
-        
+
         # Create default role
         await self.assign_role(user_id=user.id, role=SystemRole.owner.value)
-        
+
         return user
 
     async def assign_role(self, user_id, role):
@@ -37,6 +31,6 @@ class Authentication:
         user_role = UserRole(user_id=user_id, role_id=role.id)
         self.db.add(user_role)
         self.db.commit()
-    
+
     async def login(self):
         pass

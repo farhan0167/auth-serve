@@ -12,3 +12,30 @@ dependencies = [
     "ruff>=0.13.1",
     "sqlmodel>=0.0.25",
 ]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+# Enable flake8-bugbear (`B`) rules, pycodestyle (`E`/`W`), isort (`I`), and more
+select = ["E", "F", "B", "I", "W"]
+ignore = ["B008"]
+# Avoid auto-fixing these errors
+unfixable = []
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".git",
+    ".ruff_cache",
+    "__pypackages__",
+    "dist",
+    "venv",
+    ".venv",
+    "build",
+    "node_modules",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

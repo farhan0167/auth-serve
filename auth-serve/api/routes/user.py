@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
+from auth.authentication import Authentication
 from db.engine import get_session
 from models import SignupRequest, SignupResponse
-from auth.authentication import Authentication
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 
