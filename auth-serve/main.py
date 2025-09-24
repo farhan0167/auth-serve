@@ -2,7 +2,7 @@ from typing import Union
 
 from fastapi import FastAPI
 
-from db.engine import create_db_and_tables
+from db.engine import create_db_and_tables, drop_db_and_tables
 from api.routes import (
     user_router,
     project_router,
@@ -16,6 +16,11 @@ app = FastAPI()
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+    
+@app.delete("/tables")
+def delete_tables():
+    drop_db_and_tables()
+    return {"message": "Tables deleted"}
     
 
 app.include_router(user_router)
