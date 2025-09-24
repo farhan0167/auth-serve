@@ -1,5 +1,5 @@
 import uuid
-from sqlmodel import SQLModel,Field
+from sqlmodel import SQLModel
 from .organization import OrganizationBase
 from .users import UserBase
 

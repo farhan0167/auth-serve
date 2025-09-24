@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Dict, Any
-from sqlmodel import Field, SQLModel, Column
+from sqlmodel import Field, SQLModel
 from sqlalchemy.dialects.postgresql import JSONB
 
 class OrgType(str, Enum):

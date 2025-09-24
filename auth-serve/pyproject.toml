@@ -9,5 +9,6 @@ dependencies = [
     "psycopg2-binary>=2.9.10",
     "pydantic-settings>=2.10.1",
     "python-dotenv>=1.1.1",
+    "ruff>=0.13.1",
     "sqlmodel>=0.0.25",
 ]

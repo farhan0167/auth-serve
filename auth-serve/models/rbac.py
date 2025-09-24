@@ -1,6 +1,5 @@
 import datetime
 from enum import Enum
-from typing import Literal
 from sqlmodel import Field, SQLModel
 
 class RoleType(str, Enum):
