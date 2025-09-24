@@ -4,19 +4,24 @@ from typing import Literal
 from sqlmodel import Field, SQLModel
 
 class RoleType(str, Enum):
-    SYSTEM = "system"
-    CUSTOM = "custom"
+    system = "system"
+    custom = "custom"
+    
+class SystemRole(str, Enum):
+    owner = "owner"
+    admin = "admin"
+    user = "user"
 
 class PermissionActions(str, Enum):
-    READ = "read"
-    WRITE = "write"
-    DELETE = "delete"
-    CREATE = "create"
+    read = "read"
+    write = "write"
+    delete = "delete"
+    create = "create"
     
 
 class RoleBase(SQLModel):
     name: str
-    type: RoleType = Field(default=RoleType.SYSTEM)
+    type: RoleType = Field(default=RoleType.system)
     
 class PermissionBase(SQLModel):
     action: PermissionActions = Field(default=None)
