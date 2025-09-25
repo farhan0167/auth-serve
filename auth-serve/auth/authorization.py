@@ -1,4 +1,0 @@
-
-
-class Authorization:
-    pass

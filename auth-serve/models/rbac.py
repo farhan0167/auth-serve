@@ -1,6 +1,8 @@
 import datetime
 from enum import Enum
+from typing import List
 
+from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
 
@@ -35,3 +37,11 @@ class APIKeyBase(SQLModel):
     key: str = Field(unique=True, index=True)
     active: bool
     last_used: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
+    
+    
+class JWTPayload(BaseModel):
+    sub: str
+    exp: datetime.datetime
+    iat: datetime.datetime
+    scopes: List[str]
+    

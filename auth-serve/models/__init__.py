@@ -1,4 +1,4 @@
-from .auth import SignupRequest, SignupResponse
+from .auth import SignupRequest, SignupResponse, Token
 from .organization import OrganizationBase, ProjectBase
 from .rbac import APIKeyBase, PermissionBase, RoleBase
 from .users import UserBase
@@ -11,5 +11,6 @@ __all__ = [
     "PermissionBase",
     "APIKeyBase",
     "SignupRequest",
-    "SignupResponse"
+    "SignupResponse",
+    "Token",
 ]

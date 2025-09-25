@@ -1,12 +1,16 @@
 from sqlmodel import Session, select
 
-from db.tables import Organization, OrganizationBase, Role, User, UserBase, UserRole
+from .rbac import RBAC
+from db.tables import Organization, OrganizationBase, Role, User, UserBase
 from models.rbac import SystemRole
+from utils import Hasher
 
 
 class Authentication:
     def __init__(self, db: Session) -> None:
         self.db = db
+        self.hasher = Hasher()
+        self.rbac = RBAC(db)
 
     async def signup(self, org: OrganizationBase, user: UserBase):
         # Create org
@@ -14,23 +18,25 @@ class Authentication:
         # Create user
         user = User(
             org_id=org.id,
-            **user.model_dump()
+            username=user.username,
+            password=self.hasher.get_password_hash(user.password),
+            primary_email=user.primary_email
         )
         self.db.add(org)
         self.db.add(user)
         self.db.commit()
 
         # Create default role
-        await self.assign_role(user_id=user.id, role=SystemRole.owner.value)
+        await self.rbac.assign_roles(user_id=user.id, role=SystemRole.owner.value)
 
         return user
 
-    async def assign_role(self, user_id, role):
-        stmt = select(Role).where(Role.name == role)
-        role = self.db.exec(stmt).one()
-        user_role = UserRole(user_id=user_id, role_id=role.id)
-        self.db.add(user_role)
-        self.db.commit()
-
-    async def login(self):
-        pass
+    async def authenticate_user(self, username: str, password: str):
+        user = self.db.exec(
+            select(User).where(User.username == username)
+        ).one_or_none()
+        if not user:
+            return None
+        if not self.hasher.verify_password(password, user.password):
+            return None
+        return user
