@@ -3,7 +3,7 @@ from sqlmodel import Session, SQLModel, create_engine
 
 import db.tables
 from config.settings import settings
-from models.rbac import PermissionActions, SystemRole
+from utils.seed import system_roles, system_permissions, role_permission
 
 DATABASE_URL = (
     f"postgresql://{settings.DATABASE_USER}:{settings.DATABASE_PASSWORD}"
@@ -13,50 +13,7 @@ DATABASE_URL = (
 engine = create_engine(DATABASE_URL)
 
 def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
-
-    # Create system roles if not exist
-    system_roles = [
-        {"id": 1, "name": SystemRole.owner.value},
-        {"id": 2, "name": SystemRole.admin.value},
-        {"id": 3, "name": SystemRole.user.value},
-    ]
-    # Create system permissions
-    system_permissions = [
-        {
-            "id": 1,
-            "action": PermissionActions.read.value,
-            "resource": "user", "namespace": "get_users;get_user"
-        },
-        {
-            "id": 2,
-            "action": PermissionActions.write.value,
-            "resource": "user", "namespace": "update_user*"
-        },
-        {
-            "id": 3,
-            "action": PermissionActions.delete.value,
-            "resource": "user", "namespace": "delete_user"
-        },
-        {
-            "id": 4,
-            "action": PermissionActions.create.value,
-            "resource": "user", "namespace": "create_user"
-        },
-    ]
-
-    # Create system role permissions assignments
-    role_permission = [
-        {"role_id": 1, "permission_id": 1},
-        {"role_id": 1, "permission_id": 2},
-        {"role_id": 1, "permission_id": 3},
-        {"role_id": 1, "permission_id": 4},
-        {"role_id": 2, "permission_id": 1},
-        {"role_id": 2, "permission_id": 2},
-        {"role_id": 2, "permission_id": 3},
-        {"role_id": 2, "permission_id": 4},
-        {"role_id": 3, "permission_id": 1},
-    ]
+    SQLModel.metadata.create_all(engine)    
 
     def insert_into_db(
         table: SQLModel,
@@ -69,7 +26,8 @@ def create_db_and_tables():
             index_elements=index_elements
         )
         session.exec(stmt)
-
+        
+    # Seed system roles, permissions, and role_permissions
     with Session(engine) as session:
         insert_into_db(db.tables.Role, system_roles, ["id"], session)
         insert_into_db(db.tables.Permission, system_permissions, ["id"], session)
@@ -79,7 +37,6 @@ def create_db_and_tables():
             ["role_id", "permission_id"],
             session
         )
-
         session.commit()
 
 

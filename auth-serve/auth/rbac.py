@@ -37,7 +37,7 @@ class RBAC:
             ).all()
             for role_permission in role_permissions:
                 permission = role_permission.permission
-                scope = f"{permission.action.value}:{permission.namespace}"
+                scope = permission.slug
                 scopes.append(scope)
         return scopes
 

@@ -7,15 +7,14 @@ from sqlmodel import Session, select
 from auth.rbac import RBAC
 from db.engine import engine, get_session
 from db.tables import User, Permission
+from utils.seed import system_permissions
 
 class OAuth2PasswordBearerWithScopes(OAuth2PasswordBearer):
     def __init__(self):
-        with Session(engine) as db:
-            scopes_db = db.exec(select(Permission)).all()
-        scopes = {
-            scope.namespace : f"{scope.action.value}:{scope.namespace}" 
-            for scope in scopes_db
-        }
+        scopes = {}
+        for permission in system_permissions:
+            action, slug = permission["action"], permission["slug"]
+            scopes[action] = slug
         super().__init__(tokenUrl="user/login", scopes=scopes)
 
 oauth2_scheme = OAuth2PasswordBearerWithScopes()

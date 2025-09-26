@@ -1,6 +1,6 @@
 import datetime
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
@@ -19,7 +19,7 @@ class PermissionActions(str, Enum):
     read = "read"
     write = "write"
     delete = "delete"
-    create = "create"
+    all = "all"
 
 
 class RoleBase(SQLModel):
@@ -28,8 +28,11 @@ class RoleBase(SQLModel):
 
 class PermissionBase(SQLModel):
     action: PermissionActions = Field(default=None)
+    service: str
     resource: str
-    namespace: str
+    slug: str = Field(unique=True, index=True)
+    description: Optional[str] = None
+    
 
 class APIKeyBase(SQLModel):
     name: str
