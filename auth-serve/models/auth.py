@@ -1,7 +1,7 @@
 import uuid
 
-from sqlmodel import SQLModel
 from pydantic import BaseModel
+from sqlmodel import SQLModel
 
 from .organization import OrganizationBase
 from .users import UserBase

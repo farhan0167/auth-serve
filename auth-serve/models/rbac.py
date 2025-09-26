@@ -32,7 +32,7 @@ class PermissionBase(SQLModel):
     resource: str
     slug: str = Field(unique=True, index=True)
     description: Optional[str] = None
-    
+
 
 class APIKeyBase(SQLModel):
     name: str
@@ -40,11 +40,11 @@ class APIKeyBase(SQLModel):
     key: str = Field(unique=True, index=True)
     active: bool
     last_used: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
-    
-    
+
+
 class JWTPayload(BaseModel):
     sub: str
     exp: datetime.datetime
     iat: datetime.datetime
     scopes: List[str]
-    
+

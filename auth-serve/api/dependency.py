@@ -5,9 +5,10 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 
 from auth.rbac import RBAC
-from db.engine import engine, get_session
-from db.tables import User, Permission
+from db.engine import get_session
+from db.tables import User
 from utils.seed import system_permissions
+
 
 class OAuth2PasswordBearerWithScopes(OAuth2PasswordBearer):
     def __init__(self):

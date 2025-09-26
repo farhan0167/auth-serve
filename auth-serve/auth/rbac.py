@@ -1,22 +1,19 @@
-import uuid
 import datetime
+import uuid
 
-from sqlmodel import Session, select
 import jwt
+from sqlmodel import Session, select
 
 from config.settings import settings
-from db.tables import (
-    Role, 
-    UserRole,
-    RolePermission
-)
+from db.tables import Role, RolePermission, UserRole
 from models.rbac import JWTPayload
 from utils import SecretsManager
+
 
 class RBAC:
     def __init__(self, db: Session) -> None:
         self.db = db
-        
+
     async def assign_roles(self, user_id: uuid.UUID, role: str):
         role = self.db.exec(
             select(Role).where(Role.name == role)
@@ -24,12 +21,12 @@ class RBAC:
         user_role = UserRole(user_id=user_id, role_id=role.id)
         self.db.add(user_role)
         self.db.commit()
-        
+
     async def get_scopes(self, user_id: uuid.UUID):
         roles = self.db.exec(
             select(UserRole).where(UserRole.user_id == user_id)
         ).all()
-        
+
         scopes = []
         for role in roles:
             role_permissions = self.db.exec(
@@ -53,7 +50,7 @@ class RBAC:
         )
         secret = SecretsManager().get_secret()
         return jwt.encode(jwt_payload.model_dump(), secret, algorithm="HS256")
-    
+
     async def validate_access_token(self, token: str):
         secret = SecretsManager().get_secret()
         try:

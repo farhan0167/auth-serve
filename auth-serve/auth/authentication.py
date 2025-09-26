@@ -1,9 +1,10 @@
 from sqlmodel import Session, select
 
-from .rbac import RBAC
-from db.tables import Organization, OrganizationBase, Role, User, UserBase
+from db.tables import Organization, OrganizationBase, User, UserBase
 from models.rbac import SystemRole
 from utils import Hasher
+
+from .rbac import RBAC
 
 
 class Authentication:

@@ -3,7 +3,7 @@ from sqlmodel import Session, SQLModel, create_engine
 
 import db.tables
 from config.settings import settings
-from utils.seed import system_roles, system_permissions, role_permission
+from utils.seed import role_permission, system_permissions, system_roles
 
 DATABASE_URL = (
     f"postgresql://{settings.DATABASE_USER}:{settings.DATABASE_PASSWORD}"
@@ -13,7 +13,7 @@ DATABASE_URL = (
 engine = create_engine(DATABASE_URL)
 
 def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)    
+    SQLModel.metadata.create_all(engine)
 
     def insert_into_db(
         table: SQLModel,
@@ -26,7 +26,7 @@ def create_db_and_tables():
             index_elements=index_elements
         )
         session.exec(stmt)
-        
+
     # Seed system roles, permissions, and role_permissions
     with Session(engine) as session:
         insert_into_db(db.tables.Role, system_roles, ["id"], session)
