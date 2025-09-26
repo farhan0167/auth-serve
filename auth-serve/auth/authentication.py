@@ -21,7 +21,7 @@ class Authentication:
             org_id=org.id,
             username=user.username,
             password=self.hasher.get_password_hash(user.password),
-            primary_email=user.primary_email
+            primary_email=user.primary_email,
         )
         self.db.add(org)
         self.db.add(user)
@@ -33,9 +33,7 @@ class Authentication:
         return user
 
     async def authenticate_user(self, username: str, password: str):
-        user = self.db.exec(
-            select(User).where(User.username == username)
-        ).one_or_none()
+        user = self.db.exec(select(User).where(User.username == username)).one_or_none()
         if not user:
             return None
         if not self.hasher.verify_password(password, user.password):

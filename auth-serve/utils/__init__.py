@@ -13,7 +13,6 @@ class Hasher:
 
 
 class SecretsManager:
-
     def get_secret(self):
         with open("./secret.txt", "r") as f:
             secret = f.read()

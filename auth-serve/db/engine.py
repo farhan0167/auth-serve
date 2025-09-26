@@ -12,19 +12,15 @@ DATABASE_URL = (
 
 engine = create_engine(DATABASE_URL)
 
+
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
     def insert_into_db(
-        table: SQLModel,
-        rows: list[dict],
-        index_elements: list[str],
-        session: Session
+        table: SQLModel, rows: list[dict], index_elements: list[str], session: Session
     ):
         stmt = pg_insert(table).values(rows)
-        stmt = stmt.on_conflict_do_nothing(
-            index_elements=index_elements
-        )
+        stmt = stmt.on_conflict_do_nothing(index_elements=index_elements)
         session.exec(stmt)
 
     # Seed system roles, permissions, and role_permissions
@@ -35,13 +31,14 @@ def create_db_and_tables():
             db.tables.RolePermission,
             role_permission,
             ["role_id", "permission_id"],
-            session
+            session,
         )
         session.commit()
 
 
 def drop_db_and_tables():
     SQLModel.metadata.drop_all(engine)
+
 
 def get_session():
     with Session(engine) as session:

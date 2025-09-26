@@ -10,11 +10,13 @@ from models import SignupRequest, SignupResponse, Token
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 
+
 @user_router.post("/signup", response_model=SignupResponse)
 async def signup(request: SignupRequest, db: Session = Depends(get_session)):
     auth = Authentication(db)
     user = await auth.signup(request.org, request.user)
     return SignupResponse(user_id=user.id, org_id=user.org_id)
+
 
 @user_router.post("/login")
 async def login(
@@ -32,6 +34,7 @@ async def login(
         )
     access_token = await auth.rbac.create_access_token(user_id=user.id)
     return Token(access_token=access_token, token_type="bearer")
+
 
 @user_router.post("/invite")
 async def invite(db: Session = Depends(get_session)):

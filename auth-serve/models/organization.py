@@ -9,6 +9,7 @@ class OrgType(str, Enum):
     ENTERPRISE = "enterprise"
     TEAMS = "teams"
 
+
 class OrganizationBase(SQLModel):
     name: str
     domain: str

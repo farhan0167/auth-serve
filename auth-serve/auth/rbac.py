@@ -15,17 +15,13 @@ class RBAC:
         self.db = db
 
     async def assign_roles(self, user_id: uuid.UUID, role: str):
-        role = self.db.exec(
-            select(Role).where(Role.name == role)
-        ).one_or_none()
+        role = self.db.exec(select(Role).where(Role.name == role)).one_or_none()
         user_role = UserRole(user_id=user_id, role_id=role.id)
         self.db.add(user_role)
         self.db.commit()
 
     async def get_scopes(self, user_id: uuid.UUID):
-        roles = self.db.exec(
-            select(UserRole).where(UserRole.user_id == user_id)
-        ).all()
+        roles = self.db.exec(select(UserRole).where(UserRole.user_id == user_id)).all()
 
         scopes = []
         for role in roles:
@@ -43,10 +39,7 @@ class RBAC:
         expire = datetime.datetime.now() + expire_after
         scopes = await self.get_scopes(user_id)
         jwt_payload = JWTPayload(
-            sub=str(user_id),
-            exp=expire,
-            iat=datetime.datetime.now(),
-            scopes=scopes
+            sub=str(user_id), exp=expire, iat=datetime.datetime.now(), scopes=scopes
         )
         secret = SecretsManager().get_secret()
         return jwt.encode(jwt_payload.model_dump(), secret, algorithm="HS256")

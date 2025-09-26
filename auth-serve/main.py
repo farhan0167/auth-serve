@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 
 from api.routes import (
@@ -12,9 +11,11 @@ from db.engine import create_db_and_tables, drop_db_and_tables
 
 app = FastAPI()
 
+
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+
 
 @app.delete("/tables")
 def delete_tables():

@@ -10,30 +10,34 @@ system_permissions = [
     {
         "id": 1,
         "action": PermissionActions.read.value,
-        "service": "auth", "resource": "user",
+        "service": "auth",
+        "resource": "user",
         "slug": "auth.user.read",
-        "description": "Read user details"
+        "description": "Read user details",
     },
     {
         "id": 2,
         "action": PermissionActions.write.value,
-        "service": "auth",  "resource": "user",
+        "service": "auth",
+        "resource": "user",
         "slug": "auth.user.write",
-        "description": "Update user details"
+        "description": "Update user details",
     },
     {
         "id": 3,
         "action": PermissionActions.delete.value,
-        "service": "auth", "resource": "user",
+        "service": "auth",
+        "resource": "user",
         "slug": "auth.user.delete",
-        "description": "Delete user"
+        "description": "Delete user",
     },
     {
         "id": 4,
         "action": PermissionActions.all.value,
-        "service": "auth", "resource": "user",
+        "service": "auth",
+        "resource": "user",
         "slug": "auth.user.all",
-        "description": "All user actions"
+        "description": "All user actions",
     },
 ]
 

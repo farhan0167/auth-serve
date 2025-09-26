@@ -10,10 +10,12 @@ class RoleType(str, Enum):
     system = "system"
     custom = "custom"
 
+
 class SystemRole(str, Enum):
     owner = "owner"
     admin = "admin"
     user = "user"
+
 
 class PermissionActions(str, Enum):
     read = "read"
@@ -25,6 +27,7 @@ class PermissionActions(str, Enum):
 class RoleBase(SQLModel):
     name: str
     type: RoleType = Field(default=RoleType.system)
+
 
 class PermissionBase(SQLModel):
     action: PermissionActions = Field(default=None)
@@ -47,4 +50,3 @@ class JWTPayload(BaseModel):
     exp: datetime.datetime
     iat: datetime.datetime
     scopes: List[str]
-

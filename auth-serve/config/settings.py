@@ -2,9 +2,10 @@ import os
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-MIN = 60 # seconds
+MIN = 60  # seconds
 HOUR = MIN * 60
 DAY = HOUR * 24
+
 
 class Settings(BaseSettings):
     # Database settings
@@ -15,11 +16,9 @@ class Settings(BaseSettings):
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", "postgres")
 
     # JWT Settings
-    JWT_TOKEN_EXPIRATION_TIME: int = 2*HOUR
+    JWT_TOKEN_EXPIRATION_TIME: int = 2 * HOUR
 
     model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()
-
-

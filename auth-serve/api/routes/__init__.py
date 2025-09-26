@@ -8,5 +8,5 @@ __all__ = [
     "project_router",
     "role_router",
     "permission_router",
-    "validate_router"
+    "validate_router",
 ]

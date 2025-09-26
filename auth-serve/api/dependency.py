@@ -18,6 +18,7 @@ class OAuth2PasswordBearerWithScopes(OAuth2PasswordBearer):
             scopes[action] = slug
         super().__init__(tokenUrl="user/login", scopes=scopes)
 
+
 oauth2_scheme = OAuth2PasswordBearerWithScopes()
 
 
