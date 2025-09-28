@@ -99,3 +99,27 @@ async def invite(
     db.commit()
 
     return user
+
+
+@user_router.get("/me", response_model=User, name="Get current user")
+async def get_me(
+    current_user: User = Security(get_current_user, scopes=[READ, ALL]),
+):
+    return current_user
+
+
+@user_router.get("/me/roles", name="Get current user roles")
+async def get_me_roles(
+    current_user: User = Security(get_current_user, scopes=[READ, ALL]),
+    db: Session = Depends(get_session),
+):
+    roles = db.exec(select(UserRole).where(UserRole.user_id == current_user.id)).all()
+    response = []
+    for role in roles:
+        r = {**role.role.model_dump(), "permissions": []}
+        permissions = role.role.role_permissions
+        for permission in permissions:
+            r["permissions"].append(permission.permission.slug)
+        response.append(r)
+
+    return response
