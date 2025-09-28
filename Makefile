@@ -1,4 +1,4 @@
-.PHONY: db-start, db-stop, generate-secret, server, lint, lint-fix, format
+.PHONY: db-start, db-stop, generate-secret, setup, server, lint, lint-fix, format
 
 # Start and stop the databases
 db-start:
@@ -10,8 +10,12 @@ db-stop:
 generate-secret:
 	cd auth-serve && [ -f secret.txt ] || openssl rand -hex 32 > secret.txt
 
+# Install dependencies using uv
+setup:
+	cd auth-serve && uv sync
+
 # Start database and server
-server: db-start generate-secret
+server: db-start generate-secret setup
 	cd auth-serve && uv run uvicorn main:app --reload
 
 # Linting
