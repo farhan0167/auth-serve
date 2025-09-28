@@ -1,14 +1,14 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status, Security
+from fastapi import APIRouter, Depends, HTTPException, Security, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 
 from api.dependency import get_current_user
 from auth.authentication import Authentication
 from db.engine import get_session
-from db.tables import User, Role, UserRole
-from models import SignupRequest, SignupResponse, Token, NewUserInvite, UserBase
+from db.tables import Role, User, UserRole
+from models import NewUserInvite, SignupRequest, SignupResponse, Token, UserBase
 from utils import Hasher
 
 user_router = APIRouter(prefix="/user", tags=["user"])
@@ -17,6 +17,7 @@ READ = "auth.user.read"
 WRITE = "auth.user.write"
 DELETE = "auth.user.delete"
 ALL = "auth.user.all"
+
 
 @user_router.post("/signup", response_model=SignupResponse)
 async def signup(request: SignupRequest, db: Session = Depends(get_session)):
@@ -55,7 +56,7 @@ async def login(
 @user_router.post("/invite", response_model=User)
 async def invite(
     request: NewUserInvite,
-    current_user = Security(get_current_user, scopes=[WRITE, ALL]),
+    current_user=Security(get_current_user, scopes=[WRITE, ALL]),
     db: Session = Depends(get_session),
 ):
     user_data = UserBase(
@@ -88,10 +89,10 @@ async def invite(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error creating user",
-        )
+        ) from e
 
     user_role = UserRole(user_id=user.id, role_id=role.id)
     db.add(user_role)
     db.commit()
-    
+
     return user

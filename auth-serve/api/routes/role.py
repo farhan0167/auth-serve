@@ -1,18 +1,17 @@
-import uuid
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status, Security, Response
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, HTTPException, Response, Security, status
 from sqlalchemy.exc import IntegrityError
+from sqlmodel import Session, select
 
 from api.dependency import get_current_user
 from db.engine import get_session
-from db.tables import Role, User, UserRole, Permission, RolePermission
+from db.tables import Permission, Role, RolePermission, User, UserRole
 from models.rbac import (
-    RoleType, 
-    AssignRoleRequest, 
-    RoleCreateRequest, 
-    AttachPermimissionToRoleRequest
+    AssignRoleRequest,
+    AttachPermimissionToRoleRequest,
+    RoleCreateRequest,
+    RoleType,
 )
 
 role_router = APIRouter(prefix="/role", tags=["role"])
@@ -25,7 +24,7 @@ ALL = "auth.role.all"
 
 @role_router.get("/", response_model=List[Role])
 async def get_roles(
-    current_user = Security(get_current_user, scopes=[READ, ALL]),
+    current_user=Security(get_current_user, scopes=[READ, ALL]),
     db: Session = Depends(get_session),
 ):
     roles = db.exec(select(Role)).all()
@@ -35,7 +34,7 @@ async def get_roles(
 @role_router.post("/", response_model=Role)
 async def create_role(
     role: RoleCreateRequest,
-    current_user = Security(get_current_user, scopes=[WRITE, ALL]),
+    current_user=Security(get_current_user, scopes=[WRITE, ALL]),
     db: Session = Depends(get_session),
 ):
     if role.type == RoleType.system:
@@ -52,7 +51,7 @@ async def create_role(
 @role_router.delete("/", response_model=Role)
 async def delete_role(
     role_id: int,
-    current_user = Security(get_current_user, scopes=[DELETE, ALL]),
+    current_user=Security(get_current_user, scopes=[DELETE, ALL]),
     db: Session = Depends(get_session),
 ):
     role = db.exec(select(Role).where(Role.id == role_id)).one_or_none()
@@ -74,7 +73,7 @@ async def delete_role(
 @role_router.post("/assign")
 async def assign_role(
     request: AssignRoleRequest,
-    current_user = Security(get_current_user, scopes=[WRITE, ALL]),
+    current_user=Security(get_current_user, scopes=[WRITE, ALL]),
     db: Session = Depends(get_session),
 ):
     user = db.exec(select(User).where(User.username == request.username)).one_or_none()
@@ -94,11 +93,11 @@ async def assign_role(
         user_role = UserRole(user_id=user.id, role_id=role.id)
         db.add(user_role)
         db.commit()
-    except IntegrityError:
+    except IntegrityError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"User {request.username} already has role {request.role_name}",
-        )
+        ) from e
     return Response(status_code=status.HTTP_201_CREATED)
 
 
@@ -113,7 +112,7 @@ async def revoke_role():
 @role_router.get("/{username}", response_model=List[Role])
 async def get_user_roles(
     username: str,
-    current_user = Security(get_current_user, scopes=[READ, ALL]),
+    current_user=Security(get_current_user, scopes=[READ, ALL]),
     db: Session = Depends(get_session),
 ):
     user_id = db.exec(select(User.id).where(User.username == username)).one_or_none()
@@ -122,16 +121,15 @@ async def get_user_roles(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with username {username} not found",
         )
-    user_roles = db.exec(
-        select(UserRole).where(UserRole.user_id == user_id)
-    ).all()
+    user_roles = db.exec(select(UserRole).where(UserRole.user_id == user_id)).all()
     user_roles = [user_role.role for user_role in user_roles]
     return user_roles
+
 
 @role_router.post("/attach-permission")
 async def attach_permission(
     request: AttachPermimissionToRoleRequest,
-    current_user = Security(get_current_user, scopes=[WRITE, ALL]),
+    current_user=Security(get_current_user, scopes=[WRITE, ALL]),
     db: Session = Depends(get_session),
 ):
     permission = db.exec(
@@ -143,7 +141,9 @@ async def attach_permission(
             detail=f"Permission with slug {request.permission_slug} not found",
         )
 
-    role_permission = RolePermission(role_id=request.role_id, permission_id=permission.id)
+    role_permission = RolePermission(
+        role_id=request.role_id, permission_id=permission.id
+    )
     db.add(role_permission)
     db.commit()
     return Response(status_code=status.HTTP_201_CREATED)

@@ -90,7 +90,7 @@ system_permissions = [
         "resource": "permission",
         "slug": "auth.permission.all",
         "description": "All permission actions",
-    }
+    },
 ]
 
 # Create system role permissions assignments

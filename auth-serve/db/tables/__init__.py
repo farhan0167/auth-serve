@@ -2,8 +2,7 @@ import datetime
 import uuid
 from typing import Optional
 
-from sqlmodel import Column, DateTime, Field, Relationship, SQLModel
-from sqlmodel import UniqueConstraint
+from sqlmodel import Column, DateTime, Field, Relationship, SQLModel, UniqueConstraint
 
 from models import (
     APIKeyBase,

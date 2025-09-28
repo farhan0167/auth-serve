@@ -1,12 +1,12 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Security, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
 from sqlmodel import Session, select
 
 from api.dependency import get_current_user
 from db.engine import get_session
-from db.tables import Permission, RolePermission
-from models import PermissionBase, PermissionCreateRequest
+from db.tables import Permission
+from models import PermissionCreateRequest
 
 permission_router = APIRouter(prefix="/permission", tags=["permission"])
 
@@ -21,7 +21,7 @@ async def get_permissions(
     service: Optional[str] = Query(default=None),
     resource: Optional[str] = Query(default=None),
     slug: Optional[str] = Query(default=None),
-    current_user = Security(get_current_user, scopes=[READ, ALL]),
+    current_user=Security(get_current_user, scopes=[READ, ALL]),
     db: Session = Depends(get_session),
 ):
     stmt = select(Permission)
@@ -42,7 +42,7 @@ async def get_permissions(
 @permission_router.post("/")
 async def create_permission(
     permission: PermissionCreateRequest,
-    current_user = Security(get_current_user, scopes=[WRITE, ALL]),
+    current_user=Security(get_current_user, scopes=[WRITE, ALL]),
     db: Session = Depends(get_session),
 ):
     try:
@@ -55,7 +55,7 @@ async def create_permission(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e
     db.add(permission)
     db.commit()
     return permission
@@ -64,7 +64,7 @@ async def create_permission(
 @permission_router.delete("/")
 async def delete_permission(
     permission_id: int,
-    current_user = Security(get_current_user, scopes=[DELETE, ALL]),
+    current_user=Security(get_current_user, scopes=[DELETE, ALL]),
     db: Session = Depends(get_session),
 ):
     permission = db.exec(

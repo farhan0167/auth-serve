@@ -27,7 +27,8 @@ def create_db_and_tables():
     with Session(engine) as session:
         # Check if system roles already exist. Checking 1 table is enough
         roles = session.exec(select(db.tables.Role)).all()
-        if roles: return
+        if roles:
+            return
         insert_into_db(db.tables.Role, system_roles, ["name", "type"], session)
         insert_into_db(db.tables.Permission, system_permissions, ["slug"], session)
         insert_into_db(

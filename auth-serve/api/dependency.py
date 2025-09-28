@@ -1,8 +1,8 @@
 from typing import Annotated
 
-from jwt import InvalidTokenError, ExpiredSignatureError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
+from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlmodel import Session, select
 
 from auth.rbac import RBAC
@@ -27,16 +27,16 @@ async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     security_scopes: SecurityScopes,
     db: Session = Depends(get_session),
-) -> User:      
+) -> User:
     rbac = RBAC(db)
     try:
         validated_token = await rbac.validate_access_token(token)
-    except InvalidTokenError or ExpiredSignatureError as e:
+    except (ExpiredSignatureError, InvalidTokenError) as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"{e}",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
 
     user_id = validated_token.get("sub")
     if not user_id:
@@ -58,7 +58,7 @@ async def get_current_user(
             detail="Inactive user",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     user_scopes = await rbac.get_scopes(user.id)
     token_scopes = set(validated_token.get("scopes"))
     granted = user_scopes & token_scopes
@@ -71,5 +71,5 @@ async def get_current_user(
             detail="Not enough permissions",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        
+
     return user

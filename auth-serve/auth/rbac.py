@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from typing import List, Dict
+from typing import Dict, List
 
 import jwt
 from sqlmodel import Session, select
@@ -36,9 +36,7 @@ class RBAC:
         return scopes
 
     async def create_access_token(
-        self, 
-        user_id: uuid.UUID,
-        requested_scopes: List[str]
+        self, user_id: uuid.UUID, requested_scopes: List[str]
     ):
         expire_after = datetime.timedelta(seconds=settings.JWT_TOKEN_EXPIRATION_TIME)
         expire = datetime.datetime.now(tz=datetime.timezone.utc) + expire_after
