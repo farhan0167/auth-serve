@@ -9,7 +9,7 @@ from api.routes import (
 )
 from db.engine import create_db_and_tables, drop_db_and_tables
 
-app = FastAPI()
+app = FastAPI(title="Auth Serve", version="0.1.0")
 
 
 @app.on_event("startup")

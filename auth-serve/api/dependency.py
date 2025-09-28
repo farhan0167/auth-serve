@@ -8,12 +8,13 @@ from sqlmodel import Session, select
 from auth.rbac import RBAC
 from db.engine import get_session
 from db.tables import User
-from utils.seed import system_permissions
+from utils.seed import get_system_permissions
 
 
 class OAuth2PasswordBearerWithScopes(OAuth2PasswordBearer):
     def __init__(self):
         scopes = {}
+        system_permissions = get_system_permissions()
         for permission in system_permissions:
             description, slug = permission["description"], permission["slug"]
             scopes[slug] = description

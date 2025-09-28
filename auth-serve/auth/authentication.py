@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 
-from db.tables import Organization, OrganizationBase, User, UserBase
+from db.tables import Organization, OrganizationBase, User, UserBase, UserRole
 from models.rbac import SystemRole
 from utils import Hasher
 
@@ -27,8 +27,14 @@ class Authentication:
         self.db.add(user)
         self.db.commit()
 
+        # Seed ACL for this org
+        role_permission_map = await self.rbac.seed_org_acl(org_id=org.id)
+
         # Create default role
-        await self.rbac.assign_roles(user_id=user.id, role=SystemRole.owner.value)
+        owner_role_id = role_permission_map["roles"][SystemRole.owner.value]
+        user_role = UserRole(user_id=user.id, role_id=owner_role_id)
+        self.db.add(user_role)
+        self.db.commit()
 
         return user
 

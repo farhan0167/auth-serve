@@ -1,9 +1,6 @@
-from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import Session, SQLModel, create_engine
 
-import db.tables
 from config.settings import settings
-from utils.seed import role_permission, system_permissions, system_roles
 
 DATABASE_URL = (
     f"postgresql://{settings.DATABASE_USER}:{settings.DATABASE_PASSWORD}"
@@ -15,29 +12,6 @@ engine = create_engine(DATABASE_URL)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
-
-    def insert_into_db(
-        table: SQLModel, rows: list[dict], index_elements: list[str], session: Session
-    ):
-        stmt = pg_insert(table).values(rows)
-        stmt = stmt.on_conflict_do_nothing(index_elements=index_elements)
-        session.exec(stmt)
-
-    # Seed system roles, permissions, and role_permissions
-    with Session(engine) as session:
-        # Check if system roles already exist. Checking 1 table is enough
-        roles = session.exec(select(db.tables.Role)).all()
-        if roles:
-            return
-        insert_into_db(db.tables.Role, system_roles, ["name", "type"], session)
-        insert_into_db(db.tables.Permission, system_permissions, ["slug"], session)
-        insert_into_db(
-            db.tables.RolePermission,
-            role_permission,
-            ["role_id", "permission_id"],
-            session,
-        )
-        session.commit()
 
 
 def drop_db_and_tables():
