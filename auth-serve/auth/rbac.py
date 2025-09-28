@@ -1,5 +1,6 @@
 import datetime
 import uuid
+from typing import List, Dict
 
 import jwt
 from sqlmodel import Session, select
@@ -20,10 +21,10 @@ class RBAC:
         self.db.add(user_role)
         self.db.commit()
 
-    async def get_scopes(self, user_id: uuid.UUID):
+    async def get_scopes(self, user_id: uuid.UUID) -> set[str]:
         roles = self.db.exec(select(UserRole).where(UserRole.user_id == user_id)).all()
 
-        scopes = []
+        scopes = set()
         for role in roles:
             role_permissions = self.db.exec(
                 select(RolePermission).where(RolePermission.role_id == role.role_id)
@@ -31,25 +32,28 @@ class RBAC:
             for role_permission in role_permissions:
                 permission = role_permission.permission
                 scope = permission.slug
-                scopes.append(scope)
+                scopes.add(scope)
         return scopes
 
-    async def create_access_token(self, user_id: uuid.UUID):
-        expire_after = datetime.timedelta(days=settings.JWT_TOKEN_EXPIRATION_TIME)
-        expire = datetime.datetime.now() + expire_after
+    async def create_access_token(
+        self, 
+        user_id: uuid.UUID,
+        requested_scopes: List[str]
+    ):
+        expire_after = datetime.timedelta(seconds=settings.JWT_TOKEN_EXPIRATION_TIME)
+        expire = datetime.datetime.now(tz=datetime.timezone.utc) + expire_after
         scopes = await self.get_scopes(user_id)
+        # Grant requested scopes only
+        scopes = set(requested_scopes) & scopes
+        if not scopes:
+            return None
         jwt_payload = JWTPayload(
             sub=str(user_id), exp=expire, iat=datetime.datetime.now(), scopes=scopes
         )
         secret = SecretsManager().get_secret()
         return jwt.encode(jwt_payload.model_dump(), secret, algorithm="HS256")
 
-    async def validate_access_token(self, token: str):
+    async def validate_access_token(self, token: str) -> Dict:
         secret = SecretsManager().get_secret()
-        try:
-            payload = jwt.decode(token, secret, algorithms=["HS256"])
-            return payload
-        except jwt.InvalidTokenError:
-            return None
-        except jwt.ExpiredSignatureError:
-            return None
+        payload = jwt.decode(token, secret, algorithms=["HS256"])
+        return payload
