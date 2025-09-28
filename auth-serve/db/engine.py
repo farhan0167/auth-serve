@@ -1,5 +1,5 @@
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine, select
 
 import db.tables
 from config.settings import settings
@@ -25,8 +25,11 @@ def create_db_and_tables():
 
     # Seed system roles, permissions, and role_permissions
     with Session(engine) as session:
-        insert_into_db(db.tables.Role, system_roles, ["id"], session)
-        insert_into_db(db.tables.Permission, system_permissions, ["id"], session)
+        # Check if system roles already exist. Checking 1 table is enough
+        roles = session.exec(select(db.tables.Role)).all()
+        if roles: return
+        insert_into_db(db.tables.Role, system_roles, ["name", "type"], session)
+        insert_into_db(db.tables.Permission, system_permissions, ["slug"], session)
         insert_into_db(
             db.tables.RolePermission,
             role_permission,
