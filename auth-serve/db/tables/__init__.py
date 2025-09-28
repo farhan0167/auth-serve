@@ -1,7 +1,9 @@
 import datetime
 import uuid
+from typing import Optional
 
 from sqlmodel import Column, DateTime, Field, Relationship, SQLModel
+from sqlmodel import UniqueConstraint
 
 from models import (
     APIKeyBase,
@@ -33,11 +35,12 @@ class User(UserBase, table=True):
 
 
 class Role(RoleBase, table=True):
-    id: int = Field(primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    __table_args__ = (UniqueConstraint("name", "type", name="uq_role_name_type"),)
 
 
 class Permission(PermissionBase, table=True):
-    id: int = Field(primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
 
 
 class APIKey(APIKeyBase, table=True):
