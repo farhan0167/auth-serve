@@ -33,7 +33,7 @@ class PermissionBase(SQLModel):
     action: PermissionActions = Field(default=None)
     service: str
     resource: str
-    slug: str = Field(unique=True, index=True)
+    slug: str = Field(index=True)
     description: Optional[str] = None
 
 

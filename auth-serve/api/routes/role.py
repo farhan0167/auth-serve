@@ -24,17 +24,18 @@ ALL = "auth.role.all"
 
 @role_router.get("/", response_model=List[Role])
 async def get_roles(
-    current_user=Security(get_current_user, scopes=[READ, ALL]),
+    current_user: User = Security(get_current_user, scopes=[READ, ALL]),
     db: Session = Depends(get_session),
 ):
-    roles = db.exec(select(Role)).all()
+    org_id = current_user.org_id
+    roles = db.exec(select(Role).where(Role.org_id == org_id)).all()
     return roles
 
 
 @role_router.post("/", response_model=Role)
 async def create_role(
     role: RoleCreateRequest,
-    current_user=Security(get_current_user, scopes=[WRITE, ALL]),
+    current_user: User = Security(get_current_user, scopes=[WRITE, ALL]),
     db: Session = Depends(get_session),
 ):
     if role.type == RoleType.system:
@@ -42,7 +43,8 @@ async def create_role(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot create system role",
         )
-    role = Role.model_validate(role)
+    org_id = current_user.org_id
+    role = Role(org_id=org_id, **role.model_dump())
     db.add(role)
     db.commit()
     return role
@@ -51,10 +53,13 @@ async def create_role(
 @role_router.delete("/", response_model=Role)
 async def delete_role(
     role_id: int,
-    current_user=Security(get_current_user, scopes=[DELETE, ALL]),
+    current_user: User = Security(get_current_user, scopes=[DELETE, ALL]),
     db: Session = Depends(get_session),
 ):
-    role = db.exec(select(Role).where(Role.id == role_id)).one_or_none()
+    org_id = current_user.org_id
+    role = db.exec(
+        select(Role).where(Role.id == role_id, Role.org_id == org_id)
+    ).one_or_none()
     if not role:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -73,17 +78,22 @@ async def delete_role(
 @role_router.post("/assign")
 async def assign_role(
     request: AssignRoleRequest,
-    current_user=Security(get_current_user, scopes=[WRITE, ALL]),
+    current_user: User = Security(get_current_user, scopes=[WRITE, ALL]),
     db: Session = Depends(get_session),
 ):
-    user = db.exec(select(User).where(User.username == request.username)).one_or_none()
+    org_id = current_user.org_id
+    user = db.exec(
+        select(User).where(User.username == request.username, User.org_id == org_id)
+    ).one_or_none()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with username {request.username} not found",
         )
 
-    role = db.exec(select(Role).where(Role.name == request.role_name)).one_or_none()
+    role = db.exec(
+        select(Role).where(Role.name == request.role_name, Role.org_id == org_id)
+    ).one_or_none()
     if not role:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -112,10 +122,13 @@ async def revoke_role():
 @role_router.get("/{username}", response_model=List[Role])
 async def get_user_roles(
     username: str,
-    current_user=Security(get_current_user, scopes=[READ, ALL]),
+    current_user: User = Security(get_current_user, scopes=[READ, ALL]),
     db: Session = Depends(get_session),
 ):
-    user_id = db.exec(select(User.id).where(User.username == username)).one_or_none()
+    org_id = current_user.org_id
+    user_id = db.exec(
+        select(User.id).where(User.username == username, User.org_id == org_id)
+    ).one_or_none()
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -129,11 +142,14 @@ async def get_user_roles(
 @role_router.post("/attach-permission")
 async def attach_permission(
     request: AttachPermimissionToRoleRequest,
-    current_user=Security(get_current_user, scopes=[WRITE, ALL]),
+    current_user: User = Security(get_current_user, scopes=[WRITE, ALL]),
     db: Session = Depends(get_session),
 ):
+    org_id = current_user.org_id
     permission = db.exec(
-        select(Permission).where(Permission.slug == request.permission_slug)
+        select(Permission).where(
+            Permission.slug == request.permission_slug, Permission.org_id == org_id
+        )
     ).one_or_none()
     if not permission:
         raise HTTPException(

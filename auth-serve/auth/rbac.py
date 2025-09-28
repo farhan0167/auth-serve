@@ -6,20 +6,19 @@ import jwt
 from sqlmodel import Session, select
 
 from config.settings import settings
-from db.tables import Role, RolePermission, UserRole
+from db.tables import Permission, Role, RolePermission, UserRole
 from models.rbac import JWTPayload
 from utils import SecretsManager
+from utils.seed import (
+    ROLE_PERMISSION_MAP,
+    get_system_permissions,
+    get_system_roles,
+)
 
 
 class RBAC:
     def __init__(self, db: Session) -> None:
         self.db = db
-
-    async def assign_roles(self, user_id: uuid.UUID, role: str):
-        role = self.db.exec(select(Role).where(Role.name == role)).one_or_none()
-        user_role = UserRole(user_id=user_id, role_id=role.id)
-        self.db.add(user_role)
-        self.db.commit()
 
     async def get_scopes(self, user_id: uuid.UUID) -> set[str]:
         roles = self.db.exec(select(UserRole).where(UserRole.user_id == user_id)).all()
@@ -55,3 +54,29 @@ class RBAC:
         secret = SecretsManager().get_secret()
         payload = jwt.decode(token, secret, algorithms=["HS256"])
         return payload
+
+    async def seed_org_acl(self, org_id: uuid.UUID) -> dict:
+        # Roles
+        role_rows = [Role(**r) for r in get_system_roles(org_id)]
+        self.db.add_all(role_rows)
+        self.db.flush()
+        role_id_by_name = {r.name: r.id for r in role_rows}
+
+        # Permissions
+        perm_rows = [Permission(**p) for p in get_system_permissions(org_id)]
+        self.db.add_all(perm_rows)
+        self.db.flush()
+        perm_id_by_slug = {p.slug: p.id for p in perm_rows}
+
+        # Role-Permission links
+        rp_links = []
+        for role_name, slugs in ROLE_PERMISSION_MAP.items():
+            role_id = role_id_by_name[role_name]
+            for slug in slugs:
+                rp_links.append(
+                    RolePermission(role_id=role_id, permission_id=perm_id_by_slug[slug])
+                )
+        self.db.add_all(rp_links)
+        self.db.flush()
+
+        return {"roles": role_id_by_name, "permissions": perm_id_by_slug}

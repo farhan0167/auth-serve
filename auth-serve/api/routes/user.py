@@ -56,9 +56,10 @@ async def login(
 @user_router.post("/invite", response_model=User)
 async def invite(
     request: NewUserInvite,
-    current_user=Security(get_current_user, scopes=[WRITE, ALL]),
+    current_user: User = Security(get_current_user, scopes=[WRITE, ALL]),
     db: Session = Depends(get_session),
 ):
+    org_id = current_user.org_id
     user_data = UserBase(
         username=request.username,
         password=Hasher().get_password_hash(request.password),
@@ -71,7 +72,9 @@ async def invite(
             detail="Cannot invite owner or create owner role",
         )
     # Query role table
-    role = db.exec(select(Role).where(Role.name == role_name)).one_or_none()
+    role = db.exec(
+        select(Role).where(Role.name == role_name, Role.org_id == org_id)
+    ).one_or_none()
     if not role:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -79,7 +82,7 @@ async def invite(
         )
     try:
         user = User(
-            org_id=current_user.org_id,
+            org_id=org_id,
             **user_data.model_dump(),
         )
         db.add(user)
