@@ -1,7 +1,14 @@
 from .auth import SignupRequest, SignupResponse, Token
 from .organization import OrganizationBase, ProjectBase
-from .rbac import APIKeyBase, PermissionBase, RoleBase
-from .users import UserBase
+from .rbac import (
+    APIKeyBase, 
+    PermissionBase, 
+    RoleBase, 
+    AssignRoleRequest,
+    AttachPermimissionToRoleRequest,
+    PermissionCreateRequest
+)
+from .users import UserBase, NewUserInvite
 
 __all__ = [
     "OrganizationBase",
@@ -13,4 +20,8 @@ __all__ = [
     "SignupRequest",
     "SignupResponse",
     "Token",
+    "AssignRoleRequest",
+    "NewUserInvite",
+    "AttachPermimissionToRoleRequest",
+    "PermissionCreateRequest"
 ]

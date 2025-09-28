@@ -50,3 +50,21 @@ class JWTPayload(BaseModel):
     exp: datetime.datetime
     iat: datetime.datetime
     scopes: List[str]
+
+class AssignRoleRequest(BaseModel):
+    role_name: str
+    username: str
+    
+class RoleCreateRequest(RoleBase):
+    type: RoleType = Field(default=RoleType.custom)
+    
+class AttachPermimissionToRoleRequest(BaseModel):
+    role_id: int
+    permission_slug: str
+    
+class PermissionCreateRequest(BaseModel):
+    service: str = Field(default="auth")
+    resource: str
+    action: PermissionActions = Field(default=PermissionActions.read)
+    description: Optional[str] = None
+    
