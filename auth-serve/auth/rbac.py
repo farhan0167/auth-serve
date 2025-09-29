@@ -44,6 +44,8 @@ class RBAC:
         expire_after = datetime.timedelta(seconds=settings.JWT_TOKEN_EXPIRATION_TIME)
         expire = datetime.datetime.now(tz=datetime.timezone.utc) + expire_after
         scopes = await self.get_scopes(user_id)
+        if not requested_scopes:
+            requested_scopes = list(scopes)
         # Grant requested scopes only
         scopes = set(requested_scopes) & scopes
         if not scopes:

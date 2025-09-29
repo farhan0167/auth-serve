@@ -1,4 +1,4 @@
-from .jwks import jkws_router
+from .jwks import jwks_router
 from .permission import permission_router
 from .project import project_router
 from .role import role_router
@@ -9,5 +9,5 @@ __all__ = [
     "project_router",
     "role_router",
     "permission_router",
-    "jkws_router",
+    "jwks_router",
 ]
