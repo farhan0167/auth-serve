@@ -1,6 +1,6 @@
 import uuid
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel import SQLModel
 
 from .organization import OrganizationBase
@@ -20,3 +20,12 @@ class SignupResponse(SQLModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class JWKSToken(BaseModel):
+    kty: str = Field("RSA")
+    use: str = Field("sig")
+    alg: str = Field("RS256")
+    kid: str
+    n: str
+    e: str

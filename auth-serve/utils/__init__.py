@@ -10,10 +10,3 @@ class Hasher:
 
     def verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
-
-
-class SecretsManager:
-    def get_secret(self):
-        with open("./secret.txt", "r") as f:
-            secret = f.read()
-        return secret

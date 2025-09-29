@@ -1,4 +1,4 @@
-from .auth import SignupRequest, SignupResponse, Token
+from .auth import JWKSToken, SignupRequest, SignupResponse, Token
 from .organization import OrganizationBase, ProjectBase
 from .rbac import (
     APIKeyBase,
@@ -24,4 +24,5 @@ __all__ = [
     "NewUserInvite",
     "AttachPermimissionToRoleRequest",
     "PermissionCreateRequest",
+    "JWKSToken",
 ]
