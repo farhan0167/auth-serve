@@ -1,19 +1,23 @@
 import datetime
+import json
 import uuid
 from typing import Dict, List
 
 import jwt
+from jwt.algorithms import RSAAlgorithm
 from sqlmodel import Session, select
 
+from auth.keystore import KeyStore
 from config.settings import settings
 from db.tables import Permission, Role, RolePermission, UserRole
 from models.rbac import JWTPayload
-from utils import SecretsManager
 from utils.seed import (
     ROLE_PERMISSION_MAP,
     get_system_permissions,
     get_system_roles,
 )
+
+JWT_ALGORITHM = "RS256"
 
 
 class RBAC:
@@ -47,12 +51,37 @@ class RBAC:
         jwt_payload = JWTPayload(
             sub=str(user_id), exp=expire, iat=datetime.datetime.now(), scopes=scopes
         )
-        secret = SecretsManager().get_secret()
-        return jwt.encode(jwt_payload.model_dump(), secret, algorithm="HS256")
+        ks = KeyStore()
+        kid, private_pem = ks.get_current_signing_key()
+        return jwt.encode(
+            jwt_payload.model_dump(),
+            private_pem,
+            algorithm=JWT_ALGORITHM,
+            headers={"kid": kid},
+        )
 
     async def validate_access_token(self, token: str) -> Dict:
-        secret = SecretsManager().get_secret()
-        payload = jwt.decode(token, secret, algorithms=["HS256"])
+        ks = KeyStore()
+        jwks = ks.jwks()
+        unverified_header = jwt.get_unverified_header(token)
+        kid = unverified_header.get("kid")
+        if not kid:
+            raise jwt.InvalidTokenError("Invalid kid in token")
+        matches = [k for k in jwks["keys"] if k.get("kid") == kid]
+        matching = matches[0] if matches else None
+        if not matching:
+            raise jwt.InvalidTokenError("Invalid kid in token")
+
+        public_key = RSAAlgorithm.from_jwk(json.dumps(matching))
+        if not public_key:
+            raise jwt.InvalidTokenError
+
+        payload = jwt.decode(
+            token,
+            public_key,
+            algorithms=[JWT_ALGORITHM],
+            options={"require": ["exp", "sub", "scopes"]},
+        )
         return payload
 
     async def seed_org_acl(self, org_id: uuid.UUID) -> dict:
