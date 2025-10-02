@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "pyjwt>=2.10.1",
     "python-dotenv>=1.1.1",
+    "redis>=6.4.0",
     "ruff>=0.13.1",
     "sqlmodel>=0.0.25",
 ]

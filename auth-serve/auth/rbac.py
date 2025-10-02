@@ -7,14 +7,20 @@ import jwt
 from jwt.algorithms import RSAAlgorithm
 from sqlmodel import Session, select
 
-from auth.keystore import KeyStore
+from auth.keystore import keystore as ks
 from config.settings import settings
-from db.tables import Permission, Role, RolePermission, UserRole
+from db.tables import Permission, Role, RolePermission, UserRole, User
 from models.rbac import JWTPayload
 from utils.seed import (
     ROLE_PERMISSION_MAP,
     get_system_permissions,
     get_system_roles,
+)
+from auth.caching import (
+    RBACCache,
+    k_role_perm,
+    k_user,
+    k_user_roles
 )
 
 JWT_ALGORITHM = "RS256"
@@ -23,12 +29,22 @@ JWT_ALGORITHM = "RS256"
 class RBAC:
     def __init__(self, db: Session) -> None:
         self.db = db
+        self.cache = RBACCache(db)
 
-    async def get_scopes(self, user_id: uuid.UUID) -> set[str]:
+    async def get_scopes(self, user_id: uuid.UUID, org_id: uuid.UUID) -> set[str]:
+        scopes = await self.cache.get_scopes(org_id, user_id)
+        if scopes:
+            return scopes
+
         roles = self.db.exec(select(UserRole).where(UserRole.user_id == user_id)).all()
-
         scopes = set()
         for role in roles:
+            role_name = role.role.name
+            # Add to cache
+            pipe = self.cache.pipeline()
+            user_roles_key = k_user_roles(org_id, user_id)
+            pipe.sadd(user_roles_key, role_name)
+            
             role_permissions = self.db.exec(
                 select(RolePermission).where(RolePermission.role_id == role.role_id)
             ).all()
@@ -36,14 +52,17 @@ class RBAC:
                 permission = role_permission.permission
                 scope = permission.slug
                 scopes.add(scope)
+                role_perm_key = k_role_perm(org_id, role_name)
+                pipe.sadd(role_perm_key, scope)
+            await pipe.execute()
         return scopes
 
     async def create_access_token(
-        self, user_id: uuid.UUID, requested_scopes: List[str]
+        self, user_id: uuid.UUID, org_id: uuid.UUID, requested_scopes: List[str]
     ):
         expire_after = datetime.timedelta(seconds=settings.JWT_TOKEN_EXPIRATION_TIME)
         expire = datetime.datetime.now(tz=datetime.timezone.utc) + expire_after
-        scopes = await self.get_scopes(user_id)
+        scopes = await self.get_scopes(user_id, org_id)
         if not requested_scopes:
             requested_scopes = list(scopes)
         # Grant requested scopes only
@@ -53,7 +72,7 @@ class RBAC:
         jwt_payload = JWTPayload(
             sub=str(user_id), exp=expire, iat=datetime.datetime.now(), scopes=scopes
         )
-        ks = KeyStore()
+
         kid, private_pem = ks.get_current_signing_key()
         return jwt.encode(
             jwt_payload.model_dump(),
@@ -63,7 +82,6 @@ class RBAC:
         )
 
     async def validate_access_token(self, token: str) -> Dict:
-        ks = KeyStore()
         jwks = ks.jwks()
         unverified_header = jwt.get_unverified_header(token)
         kid = unverified_header.get("kid")

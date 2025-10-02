@@ -6,9 +6,10 @@ from sqlmodel import Session, select
 
 from api.dependency import get_current_user
 from auth.authentication import Authentication
+from auth.caching import RBACCache
 from db.engine import get_session
 from db.tables import Role, User, UserRole
-from models import NewUserInvite, SignupRequest, SignupResponse, Token, UserBase
+from models import NewUserInvite, SignupRequest, SignupResponse, Token, UserBase, RoleMeResponse
 from utils import Hasher
 
 user_router = APIRouter(prefix="/user", tags=["user"])
@@ -42,7 +43,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = await auth.rbac.create_access_token(
-        user_id=user.id, requested_scopes=requested_scopes
+        user_id=user.id, org_id=user.org_id, requested_scopes=requested_scopes
     )
     if not access_token:
         raise HTTPException(
@@ -113,13 +114,24 @@ async def get_me_roles(
     current_user: User = Security(get_current_user, scopes=[READ, ALL]),
     db: Session = Depends(get_session),
 ):
+    cache = RBACCache(db)
+    roles = await cache.get_user_roles(current_user.org_id, current_user.id)
+    if roles:
+        response = []
+        for role in roles:
+            r = RoleMeResponse(name=role, permissions=[])
+            r.permissions = await cache.get_role_permissions(
+                current_user.org_id, role
+            )
+            response.append(r)
+        return response
     roles = db.exec(select(UserRole).where(UserRole.user_id == current_user.id)).all()
     response = []
     for role in roles:
-        r = {**role.role.model_dump(), "permissions": []}
+        r = RoleMeResponse(name=role.role.name, permissions=[])
         permissions = role.role.role_permissions
         for permission in permissions:
-            r["permissions"].append(permission.permission.slug)
+            r.permissions.append(permission.permission.slug)
         response.append(r)
 
     return response
