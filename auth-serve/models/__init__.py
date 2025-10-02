@@ -7,7 +7,7 @@ from .rbac import (
     PermissionBase,
     PermissionCreateRequest,
     RoleBase,
-    RoleMeResponse
+    RoleMeResponse,
 )
 from .users import NewUserInvite, UserBase
 
@@ -26,5 +26,5 @@ __all__ = [
     "AttachPermimissionToRoleRequest",
     "PermissionCreateRequest",
     "JWKSToken",
-    "RoleMeResponse"
+    "RoleMeResponse",
 ]

@@ -9,7 +9,14 @@ from auth.authentication import Authentication
 from auth.caching import RBACCache
 from db.engine import get_session
 from db.tables import Role, User, UserRole
-from models import NewUserInvite, SignupRequest, SignupResponse, Token, UserBase, RoleMeResponse
+from models import (
+    NewUserInvite,
+    RoleMeResponse,
+    SignupRequest,
+    SignupResponse,
+    Token,
+    UserBase,
+)
 from utils import Hasher
 
 user_router = APIRouter(prefix="/user", tags=["user"])
@@ -120,9 +127,7 @@ async def get_me_roles(
         response = []
         for role in roles:
             r = RoleMeResponse(name=role, permissions=[])
-            r.permissions = await cache.get_role_permissions(
-                current_user.org_id, role
-            )
+            r.permissions = await cache.get_role_permissions(current_user.org_id, role)
             response.append(r)
         return response
     roles = db.exec(select(UserRole).where(UserRole.user_id == current_user.id)).all()

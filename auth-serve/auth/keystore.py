@@ -5,7 +5,6 @@ import base64
 import uuid
 from pathlib import Path
 from typing import Dict, List, Tuple
-from functools import lru_cache
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -37,7 +36,6 @@ class KeyStore:
     def _write_current_kid(self, kid: str) -> None:
         self.current_kid = CURRENT_KID.write_text(kid)
 
-    @lru_cache(maxsize=1)
     def _read_current_kid(self) -> str:
         return CURRENT_KID.read_text().strip()
 
@@ -67,14 +65,12 @@ class KeyStore:
 
     # ---------- Loading keys ----------
 
-    @lru_cache(maxsize=2)
     def get_current_signing_key(self) -> Tuple[str, bytes]:
         """Returns (kid, private_pem_bytes)."""
         kid = self._read_current_kid()
         pem = (PRIVATE_DIR / f"{kid}.pem").read_bytes()
         return kid, pem
 
-    @lru_cache(maxsize=2)
     def list_public_keys(self) -> List[Tuple[str, bytes]]:
         """[(kid, public_pem_bytes), ...] sorted by filename for stability."""
         pairs: List[Tuple[str, bytes]] = []
@@ -84,7 +80,6 @@ class KeyStore:
 
     # ---------- JWKS ----------
 
-    @lru_cache(maxsize=2)
     def _public_pem_to_jwk(self, kid: str, public_pem: bytes) -> JWKSToken:
         """Convert a PEM public key to a JWK dict for JWKS."""
         public_key = serialization.load_pem_public_key(public_pem)
@@ -96,12 +91,12 @@ class KeyStore:
         e = _b64url_uint(numbers.e)
         return JWKSToken(kid=kid, n=n, e=e)
 
-    @lru_cache(maxsize=2)
     def jwks(self) -> Dict[str, List[Dict]]:
         keys = [
             self._public_pem_to_jwk(kid, pem).model_dump()
             for kid, pem in self.list_public_keys()
         ]
         return {"keys": keys}
+
 
 keystore = KeyStore()

@@ -1,13 +1,14 @@
-
 import json
-import redis.asyncio as redis
 from typing import Dict
+
+import redis.asyncio as redis
 
 from config.settings import settings
 
 MIN = 60  # seconds
 HOUR = MIN * 60
 DAY = HOUR * 24
+
 
 class RedisClient(redis.Redis):
     def __init__(self, expire: int = None):
@@ -20,8 +21,7 @@ class RedisClient(redis.Redis):
             self.ex = settings.REDIS_KEY_EXPIRATION_TIME
         else:
             self.ex = expire
-        
-    
+
     async def set_dict(self, key: str, value: Dict, expire: int = None):
         """
         Set a key-value pair in Redis. The value is a JSON-formatted
@@ -33,7 +33,7 @@ class RedisClient(redis.Redis):
             await self.set(key, value, ex=expire)
         else:
             await self.set(key, value, ex=self.ex)
-        
+
     async def get_dict(self, key: str):
         """
         Get a key-value pair from Redis. The value is a JSON-formatted

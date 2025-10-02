@@ -71,8 +71,8 @@ class PermissionCreateRequest(BaseModel):
     resource: str
     action: PermissionActions = Field(default=PermissionActions.read)
     description: Optional[str] = None
-    
-    
+
+
 class RoleMeResponse(BaseModel):
     name: str
     permissions: List[str]

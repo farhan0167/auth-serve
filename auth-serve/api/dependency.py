@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status, BackgroundTasks
+from fastapi import BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlmodel import Session, select
 
-from auth.rbac import RBAC
 from auth.caching import RBACCache
+from auth.rbac import RBAC
 from db.engine import get_session
 from db.tables import User
 from utils.seed import get_system_permissions

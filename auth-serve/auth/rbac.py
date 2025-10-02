@@ -7,20 +7,15 @@ import jwt
 from jwt.algorithms import RSAAlgorithm
 from sqlmodel import Session, select
 
+from auth.caching import RBACCache, k_role_perm, k_user_roles
 from auth.keystore import keystore as ks
 from config.settings import settings
-from db.tables import Permission, Role, RolePermission, UserRole, User
+from db.tables import Permission, Role, RolePermission, UserRole
 from models.rbac import JWTPayload
 from utils.seed import (
     ROLE_PERMISSION_MAP,
     get_system_permissions,
     get_system_roles,
-)
-from auth.caching import (
-    RBACCache,
-    k_role_perm,
-    k_user,
-    k_user_roles
 )
 
 JWT_ALGORITHM = "RS256"
@@ -44,7 +39,7 @@ class RBAC:
             pipe = self.cache.pipeline()
             user_roles_key = k_user_roles(org_id, user_id)
             pipe.sadd(user_roles_key, role_name)
-            
+
             role_permissions = self.db.exec(
                 select(RolePermission).where(RolePermission.role_id == role.role_id)
             ).all()

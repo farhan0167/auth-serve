@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # JWT Settings
     JWT_TOKEN_EXPIRATION_TIME: int = 2 * HOUR
-    
+
     # Redis Settings
     REDIS_HOST: str = "localhost"
     REDIS_PORT: str = "6379"
