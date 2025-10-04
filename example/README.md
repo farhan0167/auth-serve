@@ -173,7 +173,7 @@ With the access token of the super-user, you will now create a permission for th
 
 curl --location 'http://localhost:8000/permission/' \
 --header 'accept: application/json' \
---header 'Authorization: Bearer <paste access token here> \
+--header 'Authorization: Bearer <paste access token here>' \
 --header 'Content-Type: application/json' \
 --data '{
   "service": "example_service",
@@ -188,7 +188,7 @@ Once we create the permission, we'll need to attach it to a role. For now, we'll
 ```bash
 curl --location 'http://localhost:8000/role/attach-permission' \
 --header 'accept: application/json' \
---header 'Authorization: Bearer <paste access token here>
+--header 'Authorization: Bearer <paste access token here>' \
 --header 'Content-Type: application/json' \
 --data '{
   "role_id": <role_id>,
@@ -201,7 +201,7 @@ To get the role id, you can query the get roles endpoint, and grab the id of the
 ```bash
 curl --location 'http://localhost:8000/role/' \
 --header 'Accept: application/json' \
---header 'Authorization: Bearer <paste access token here>
+--header 'Authorization: Bearer <paste access token here>'
 ```
 
 ## Launch Example Server
@@ -214,12 +214,23 @@ uv run uvicorn main:app --port 8001 --host 0.0.0.0 --reload
 
 ### Query the endpoints:
 
-1. Get endpoint:
+1. Get the access token
+   ```bash
+    curl --location 'http://localhost:8000/user/login' \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    --header 'Accept: application/json' \
+    --data-urlencode 'username=test_user' \
+    --data-urlencode 'password=test1234@' \
+    --data-urlencode 'grant_type=password' \
+    --data-urlencode 'scope='
+
+    ```
+2. Get endpoint:
     ```bash
     curl -X 'GET' \
     'http://localhost:8001/billing/' \
     -H 'accept: application/json' \
-    -H 'Authorization: Bearer <paste access token here>
+    -H 'Authorization: Bearer <paste access token here>'
     ```
 
     This should return:
@@ -228,12 +239,12 @@ uv run uvicorn main:app --port 8001 --host 0.0.0.0 --reload
         "message": "Read billing"
     }
     ```
-2. Post endpoint:
+3. Post endpoint:
     ```bash
     curl -X 'POST' \
         'http://localhost:8001/billing/' \
         -H 'accept: application/json' \
-        -H 'Authorization: Bearer <paste access token here>
+        -H 'Authorization: Bearer <paste access token here>'
     ```
     This should return:
     ```bash
