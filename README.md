@@ -10,6 +10,10 @@ Auth-Serve gives you a ready-made auth server with Role-Based Access Control (RB
 
 1. Auth-serve uses `uv` package manager, so make sure you have it [installed](https://docs.astral.sh/uv/).
 2. After cloning the repo, simply run `make server` and get started!
+3. Go to `http://localhost:8000/docs` and start exploring.
+4. You can use the example provided to see how you can structure your microservice for auth-serve in [example](https://github.com/farhan0167/auth-serve/tree/main/example).
+
+---
 
 
 ## Concepts  
@@ -37,9 +41,7 @@ Auth-Serve gives you a ready-made auth server with Role-Based Access Control (RB
 
 Together, these concepts let you enforce **Role-Based Access Control (RBAC)** across your entire system in a consistent and predictable way.  
 
-### Practical Example 1
-
-In **Auth Serve**, the following resources are available:
+Using these concepts, in **Auth Serve**, the following resources are available:
 
 - **User** – Handles signups, logins, and user invitations (e.g. `user-add`).  
 - **Role** – Allows creating and managing roles, including attaching permissions to them.  
@@ -81,3 +83,9 @@ This means:
 In short:  
 - **Owner** = full control over users, roles, and permissions.  
 - **Admin** = full control over users, but only read access to roles and permissions, unless altered by Owner.  
+
+
+## Work in Progress
+
+- [ ] Implement caching for faster reads. You can check it out [here](https://github.com/farhan0167/auth-serve/tree/caching).
+- [ ] Implement more fine-grained access controls.
