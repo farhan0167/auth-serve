@@ -1,0 +1,12 @@
+[project]
+name = "demo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cryptography>=46.0.2",
+    "fastapi[standard]>=0.118.0",
+    "httpx>=0.28.1",
+    "pyjwt>=2.10.1",
+]
